@@ -1,0 +1,54 @@
+<html lang="en">
+    <head>
+        <title>LN2 Camera</title>
+    </head>
+    <body>
+        <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-app.js"></script>
+        <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyBjuffML7LgvDL2pLGuEcJjhJCj8q0GDIE",
+            authDomain: "trailcam1.firebaseapp.com",
+            databaseURL: "https://trailcam1.firebaseio.com",
+            projectId: "trailcam1",
+            storageBucket: "trailcam1.appspot.com",
+            messagingSenderId: "510620428883",
+            appId: "1:510620428883:web:8c6ad27584bfe76b41b4a6"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        </script>
+        <script>
+            URL_POLL_RATE = 3000; // 3 seconds is about my attention span
+            function check_url() {
+                /* Poll the current URL, and do a reload if it is not an error */
+                var requestOptions = {
+                    method: 'GET',
+                    redirect: 'follow'
+                };
+
+                fetch("https://parvenue-capybara-2527.dataplicity.io/", requestOptions)
+                    .then(response => response.text())
+                    .then(result => console.log(result))
+                    .catch(error => console.log('error', error));
+                request.onreadystatechange = function() {
+                    if (request.readyState == 4) {
+                        /* Wormhole sets this header on responses it generates */
+                        var wormhole_response = request.getResponseHeader('Wormhole-Template') !== null;
+                        if (wormhole_response) {
+                            /* Try again if we didn't get a response from the device */
+                            document.getElementById('status').innerHTML = "offline";
+                            setTimeout(check_url, URL_POLL_RATE);
+                        } else {
+                            /* The device returned a response, reload to page */
+                            document.getElementById('status').innerHTML = "online";
+                            setTimeout(check_url, URL_POLL_RATE);
+                        }
+                    }
+                };
+                request
+            }
+            check_url();
+        </script>
+        Trail Cam is currently <span id="status"></span>.
+    </body>
+</html>
