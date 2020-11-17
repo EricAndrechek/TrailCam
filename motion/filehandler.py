@@ -29,11 +29,11 @@ def log_reader():
             time.sleep(1)
             file.seek(where)
         else:
-            if "event_newfile: File of type 1 saved to:" in line:
-                pic_path = line.split("event_newfile: File of type 1 saved to: ")[1].rstrip()
-            elif "event_newfile: File of type 8 saved to:" in line:
-                last_vid = line.split("event_newfile: File of type 8 saved to: ")[1].rstrip()
-            elif "mlp_actions: End of event" in line:
+            if "File of type 1 saved to:" in line:
+                pic_path = line.split("File of type 1 saved to: ")[1].rstrip()
+            elif "File of type 8 saved to:" in line:
+                last_vid = line.split("File of type 8 saved to: ")[1].rstrip()
+            elif "End of event" in line:
                 vid_length = get_length(last_vid)
                 logging.info('Motion lasting {} seconds completed. Begining uploading...'.format(vid_length))
                 vid_url = upload(last_vid, event_time, '.mp4')
@@ -45,7 +45,7 @@ def log_reader():
                 os.remove(last_vid)
                 os.remove(pic_path)
                 logging.info('Local files deleted. Wait for new motion event...')
-            elif "motion_detected: Motion detected - starting event" in line:
+            elif "Motion detected - starting event" in line:
                 event_time = line.split("] motion_detected: Motion detected - starting event")[0].split("[ALL] [")[1]
                 logging.info('\nMotion detected at {}'.format(event_time))
 

@@ -1,9 +1,11 @@
 # Open Trail Cam
+
 The repository for a open sourced and free trail cam service easy to install on raspberry pi's.
 
 For the purpose of this readme, the following examples will be outlined on a raspberry pi.
 
 ## Installation
+
 To begin, install [motion](https://motion-project.github.io/) on your camera hardware.
 This can be accomplished by running `sudo apt-get install motion`
 
@@ -38,7 +40,8 @@ if [ "$_IP" ]; then
   printf "My IP address is %s\n" "$_IP"
 fi
 
-sudo bash /home/pi/TrailCam/motion/boot.sh &
+/home/pi/TrailCam/motion/./boot.sh &
+date > /home/pi/TrailCam/motion/rc.txt
 
 exit 0
 ```
@@ -46,4 +49,3 @@ exit 0
 Now we need to install the python modules required. To install them, run `pip3 install -r requirements.txt`
 
 Now create service accounts for firebase and google cloud storage and download the .json files and copy and paste the contents into the firebase.json and cloud-storage.json, with firebase's web data put into database.json.
-

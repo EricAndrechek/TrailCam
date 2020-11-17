@@ -68,3 +68,4 @@ node_modules/
 *.json
 motion/*.json
 motion/env
+.firebaserc
