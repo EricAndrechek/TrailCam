@@ -47,7 +47,7 @@ def log_reader():
                 logging.info('Local files deleted. Wait for new motion event...')
             elif "Motion detected - starting event" in line:
                 event_time = line.split("] motion_detected: Motion detected - starting event")[0].split("[ALL] [")[1]
-                logging.info('\nMotion detected at {}'.format(event_time))
+                logging.info('Motion detected at {}'.format(event_time))
 
 def database(timestamp, vurl, purl, vlength):
     db = firebase.database()
