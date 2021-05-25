@@ -34,7 +34,7 @@ def upload(filename, timestamp, filetype):
     return file.public_url
 
 def get_length(filename):
-    result = subprocess.run(['ffprobe', filename, "-show_format 2>&1 | sed -n 's/duration=//p'"],
+    result = subprocess.run(['ffprobe', filename, '-show_format', '2>&1', '|', 'sed', '-n', '\'s/duration=//p\''],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
     return float(result.stdout)
