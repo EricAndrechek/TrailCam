@@ -1,54 +1,135 @@
 <html lang="en">
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>LN2 Camera</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css" />
+        <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" />
     </head>
     <body>
-        <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-app.js"></script>
+        <div class="columns is-centered">
+            <div class="column is-narrow has-text-centered">
+                <h1 class="title">The LN<sub>2</sub> Camera is currently <span id="status">offline</span>.</h1>
+                <div id="feed"></div>
+            </div>
+        </div>
         <script>
-        var firebaseConfig = {
-            apiKey: "AIzaSyBjuffML7LgvDL2pLGuEcJjhJCj8q0GDIE",
-            authDomain: "trailcam1.firebaseapp.com",
-            databaseURL: "https://trailcam1.firebaseio.com",
-            projectId: "trailcam1",
-            storageBucket: "trailcam1.appspot.com",
-            messagingSenderId: "510620428883",
-            appId: "1:510620428883:web:8c6ad27584bfe76b41b4a6"
-        };
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        </script>
-        <script>
+            let database = "https://trailcam1.firebaseio.com/.json";
+            let evtSource = new EventSource(database);
+
+            function add_event(event_json) {
+                let video_url = event_json.video_url;
+                let picture_url = event_json.picture_url;
+                let timestamp = event_json.timestamp;
+                let duration = event_json.duration;
+
+                let card = document.createElement("div");
+                let video = document.createElement("video");
+                let source = document.createElement("source");
+                let content = document.createElement("div");
+                let card_content = document.createElement("div");
+                let header = document.createElement("p");
+
+                let download_video = document.createElement("button");
+                let download_picture = document.createElement("button");
+                let video_download_text = document.createElement("span");
+                let video_download_icon = document.createElement("span");
+                let video_download_img = document.createElement("i");
+                let picture_download_text = document.createElement("span");
+                let picture_download_icon = document.createElement("span");
+                let picture_download_img = document.createElement("i");
+
+                download_video.setAttribute("class", "button");
+                download_picture.setAttribute("class", "button");
+                video_download_icon.setAttribute("class", "icon");
+                picture_download_icon.setAttribute("class", "icon");
+                video_download_text.innerHTML = "Video";
+                picture_download_text.innerHTML = "Picture";
+                video_download_img.setAttribute("class", "fas fa-cloud-download-alt");
+                picture_download_img.setAttribute("class", "fas fa-cloud-download-alt");
+
+                video_download_icon.appendChild(video_download_img);
+                picture_download_icon.appendChild(picture_download_img);
+                download_video.appendChild(video_download_icon);
+                download_video.appendChild(video_download_text);
+                download_picture.appendChild(picture_download_icon);
+                download_picture.appendChild(picture_download_text);
+
+                download_picture.setAttribute("style", "margin: 0.5rem");
+                download_picture.setAttribute("onclick", "window.open('" + picture_url + "')");
+                download_video.setAttribute("style", "margin: 0.5rem");
+                download_video.setAttribute("onclick", "window.open('" + video_url + "')");
+
+                let feed = document.getElementById("feed");
+
+                card.setAttribute("class", "card");
+                card.setAttribute("style", "padding-bottom: 0.5rem; margin-bottom: 1.5rem;");
+                card_content.setAttribute("class", "card-content");
+                content.setAttribute("class", "content");
+                header.setAttribute("class", "title is-5");
+                header.innerHTML = timestamp;
+                video.setAttribute("poster", picture_url);
+                video.setAttribute("controls", true);
+                video.setAttribute("style", "padding-bottom: 0.5rem;");
+                source.setAttribute("src", video_url);
+
+                video.appendChild(source);
+                content.appendChild(header);
+                card_content.appendChild(content);
+
+                card.appendChild(card_content);
+                card.appendChild(video);
+                card.appendChild(document.createElement("br"));
+                card.appendChild(download_picture);
+                card.appendChild(download_video);
+
+                feed.prepend(card);
+            }
+
+            evtSource.addEventListener(
+                "put",
+                function (e) {
+                    db_update = JSON.parse(e.data).data;
+                    if ("duration" in db_update) {
+                        add_event(db_update);
+                    } else {
+                        for (let key in db_update) {
+                            add_event(db_update[key]);
+                        }
+                    }
+                },
+                false
+            );
+
+            let reverse_proxy_url = "https://cors.bridged.cc/https://radiate-swallow-9427.dataplicity.io/";
+
             URL_POLL_RATE = 3000; // 3 seconds is about my attention span
             function check_url() {
                 /* Poll the current URL, and do a reload if it is not an error */
                 var requestOptions = {
-                    method: 'GET',
-                    redirect: 'follow'
+                    method: "GET",
+                    redirect: "follow",
                 };
 
-                fetch("https://parvenue-capybara-2527.dataplicity.io/", requestOptions)
-                    .then(response => response.text())
-                    .then(result => console.log(result))
-                    .catch(error => console.log('error', error));
-                request.onreadystatechange = function() {
-                    if (request.readyState == 4) {
-                        /* Wormhole sets this header on responses it generates */
-                        var wormhole_response = request.getResponseHeader('Wormhole-Template') !== null;
-                        if (wormhole_response) {
+                var ping = new XMLHttpRequest();
+                ping.onreadystatechange = function () {
+                    if (ping.readyState == 4) {
+                        var wormhole_response = ping.getResponseHeader("Wormhole-Template");
+                        if (wormhole_response === "noservice.html") {
                             /* Try again if we didn't get a response from the device */
-                            document.getElementById('status').innerHTML = "offline";
+                            document.getElementById("status").innerHTML = "online";
                             setTimeout(check_url, URL_POLL_RATE);
                         } else {
                             /* The device returned a response, reload to page */
-                            document.getElementById('status').innerHTML = "online";
+                            document.getElementById("status").innerHTML = "offline";
                             setTimeout(check_url, URL_POLL_RATE);
                         }
                     }
                 };
-                request
+                ping.open("GET", reverse_proxy_url);
+                ping.setRequestHeader("x-requested-with", "XMLHttpRequest");
+                ping.send(null);
             }
             check_url();
         </script>
-        Trail Cam is currently <span id="status"></span>.
     </body>
 </html>
