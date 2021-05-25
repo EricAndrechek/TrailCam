@@ -65,3 +65,5 @@ if len(sys.argv) == 3:
         logging.info('Log database entries updated. Deleting local files...')
     os.remove(media)
     logging.info('Local files deleted. Waiting for new motion event...')
+else:
+    logging.info(sys.argv)
