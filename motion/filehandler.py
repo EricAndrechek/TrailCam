@@ -43,12 +43,12 @@ def get_length(filename):
 
 
 logging.basicConfig(filename="main.log", level=logging.DEBUG, format='%(asctime)s - %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
+logging.info('New event finished, motion logging begining.')
 
 if len(sys.argv) == 3:
     media = sys.argv[1]
     event_time = sys.argv[2]
     if media.lower().endswith('.mp4'):
-        logging.info('New event finished, motion logging begining.')
         vid_length = get_length(media)
         logging.info('Motion lasting {} seconds completed. Begining uploading...'.format(vid_length))
         vid_url = upload(media, event_time, '.mp4')
