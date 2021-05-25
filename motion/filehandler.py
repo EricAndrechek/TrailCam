@@ -1,3 +1,5 @@
+#!/user/bin/python3
+
 from google.cloud import storage
 import time, os
 import base64
@@ -77,4 +79,9 @@ def get_length(filename):
         stderr=subprocess.STDOUT)
     return float(result.stdout)
 
-log_reader()
+# log_reader()
+db = firebase.database()
+data = {
+    "booted": 'true'
+}
+db.push(data)
