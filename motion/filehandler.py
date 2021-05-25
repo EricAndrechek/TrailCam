@@ -34,8 +34,12 @@ def upload(filename, timestamp, filetype):
     return file.public_url
 
 def get_length(filename):
-    result = subprocess.run('ffprobe' + filename + '-show_format 2>&1 | sed -n \'s/duration=//p\'', shell=True)
-    return float(result)
+    result = subprocess.run(["ffprobe", "-v", "error", "-show_entries",
+                             "format=duration", "-of",
+                             "default=noprint_wrappers=1:nokey=1", filename],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
+    return float(result.stdout)
 
 
 logging.basicConfig(filename="main.log", level=logging.DEBUG, format='%(asctime)s - %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
