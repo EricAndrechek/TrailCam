@@ -1,7 +1,7 @@
 #!/user/bin/python3
 
 from google.cloud import storage
-import time, os
+import time, os, sys
 import base64
 import subprocess
 import pyrebase
@@ -11,45 +11,7 @@ import json
 config = json.loads(open('database.json', 'r').read())
 
 firebase = pyrebase.initialize_app(config)
-logging.basicConfig(filename="main.log", level=logging.DEBUG, format='%(asctime)s - %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
 
-def log_reader():
-    logging.info('Pi has booted. Motion logging begining.')
-    file = open('motion.log','r')
-
-    st_results = os.stat('motion.log')
-    st_size = st_results[6]
-    file.seek(st_size)
-    last_vid = ""
-    pic_path = ""
-    event_time = ""
-
-    while 1:
-        where = file.tell()
-        line = file.readline()
-        if not line:
-            time.sleep(1)
-            file.seek(where)
-        else:
-            if "File of type 1 saved to:" in line:
-                pic_path = line.split("File of type 1 saved to: ")[1].rstrip()
-            elif "File of type 8 saved to:" in line:
-                last_vid = line.split("File of type 8 saved to: ")[1].rstrip()
-            elif "End of event" in line:
-                vid_length = get_length(last_vid)
-                logging.info('Motion lasting {} seconds completed. Begining uploading...'.format(vid_length))
-                vid_url = upload(last_vid, event_time, '.mp4')
-                logging.info('Video saved to {}'.format(vid_url))
-                pic_url = upload(pic_path, event_time, '.jpg')
-                logging.info('Picture saved to {}'.format(pic_url))
-                database(event_time, vid_url, pic_url, vid_length)
-                logging.info('Log database entries updated. Deleting local files...')
-                os.remove(last_vid)
-                os.remove(pic_path)
-                logging.info('Local files deleted. Wait for new motion event...')
-            elif "Motion detected - starting event" in line:
-                event_time = line.split("] motion_detected: Motion detected - starting event")[0].split("[ALL] [")[1]
-                logging.info('Motion detected at {}'.format(event_time))
 
 def database(timestamp, vurl, purl, vlength):
     db = firebase.database()
@@ -79,9 +41,27 @@ def get_length(filename):
         stderr=subprocess.STDOUT)
     return float(result.stdout)
 
-# log_reader()
-db = firebase.database()
-data = {
-    "booted": 'true'
-}
-db.push(data)
+
+logging.basicConfig(filename="main.log", level=logging.DEBUG, format='%(asctime)s - %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
+
+if len(sys.argv) == 3:
+    media = sys.argv[1]
+    event_time = sys.argv[2]
+    if media.lower().endswith('.mp4'):
+        logging.info('New event finished, motion logging begining.')
+        vid_length = get_length(media)
+        logging.info('Motion lasting {} seconds completed. Begining uploading...'.format(vid_length))
+        vid_url = upload(media, event_time, '.mp4')
+        logging.info('Video saved to {}'.format(vid_url))
+        f = open("/home/pi/TrailCam/motion/video.txt", "w")
+        f.write("{} & {}".format(vid_length, vid_url))
+        f.close()
+    elif media.lower().endswith('.jpg'):
+        pic_url = upload(media, event_time, '.jpg')
+        logging.info('Picture saved to {}'.format(pic_url))
+        f = open("/home/pi/TrailCam/motion/video.txt", "r")
+        vid_url, vid_length = f.read().split(" & ")
+        database(event_time, vid_url, pic_url, vid_length)
+        logging.info('Log database entries updated. Deleting local files...')
+    os.remove(media)
+    logging.info('Local files deleted. Waiting for new motion event...')
