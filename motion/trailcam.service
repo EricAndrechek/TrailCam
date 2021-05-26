@@ -1,0 +1,15 @@
+[Unit]
+Description=Trail Cam
+After=network.target
+After=systemd-user-sessions.service
+After=network-online.target
+
+[Service]
+Type=idle
+User=pi
+WorkingDirectory=/home/pi/TrailCam/motion
+ExecStart=/usr/bin/python3 /home/pi/TrailCam/motion/filehandler.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
